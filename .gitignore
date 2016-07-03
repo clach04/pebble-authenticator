@@ -1,4 +1,4 @@
 build
 configuration.txt
-src/configuration.h
+#src/configuration.h
 .lock-waf_darwin_build
