@@ -11,23 +11,6 @@ static int current_token;
 static bool current_token_changed;
 static float timezone = DEFAULT_TIME_ZONE;
 
-/*
-
-MESSAGE_KEY_
-
-
-timezone
-vib_warn
-vib_renew
-CURRENT_TOKEN -- NOTE not actually sent as a message but using the same key auto gen for persistent storage
-
-enum {
-	MESSAGE_KEY_timezone,
-	MESSAGE_KEY_vib_warn,
-	MESSAGE_KEY_vib_renew,
-	MESSAGE_KEY_CURRENT_TOKEN
-};
-*/
 
 float stof(const char* s) {
 	float rez = 0, fact = 1;
