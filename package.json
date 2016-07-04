@@ -1,0 +1,43 @@
+{
+    "author": "Neal",
+    "dependencies": {
+        "pebble-clay": "^1.0.1"
+    },
+    "keywords": [],
+    "name": "authenticator",
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "Authenticator",
+        "enableMultiJS": true,
+        "messageKeys": [
+            "timezone",
+            "vib_warn",
+            "vib_renew",
+            "CURRENT_TOKEN"
+        ],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/twostep_icon.png",
+                    "menuIcon": true,
+                    "name": "IMAGE_MENU_ICON",
+                    "type": "png"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk"
+        ],
+        "uuid": "011046be-c0c1-464d-af81-381b937447cd",
+        "watchapp": {
+            "watchface": false
+        }
+    },
+    "version": "2.0.0"
+}

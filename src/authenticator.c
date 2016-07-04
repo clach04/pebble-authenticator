@@ -11,12 +11,23 @@ static int current_token;
 static bool current_token_changed;
 static float timezone = DEFAULT_TIME_ZONE;
 
+/*
+
+MESSAGE_KEY_
+
+
+timezone
+vib_warn
+vib_renew
+CURRENT_TOKEN -- NOTE not actually sent as a message but using the same key auto gen for persistent storage
+
 enum {
-	KEY_TIMEZONE,
-	KEY_VIB_WARN,
-	KEY_VIB_RENEW,
-	KEY_CURRENT_TOKEN
+	MESSAGE_KEY_timezone,
+	MESSAGE_KEY_vib_warn,
+	MESSAGE_KEY_vib_renew,
+	MESSAGE_KEY_CURRENT_TOKEN
 };
+*/
 
 float stof(const char* s) {
 	float rez = 0, fact = 1;
@@ -39,27 +50,27 @@ float stof(const char* s) {
 }
 
 void set_timezone() {
-	if (persist_exists(KEY_TIMEZONE)) {
+	if (persist_exists(MESSAGE_KEY_timezone)) {
 		char tz[7];
-		persist_read_string(KEY_TIMEZONE, tz, sizeof(tz));
+		persist_read_string(MESSAGE_KEY_timezone, tz, sizeof(tz));
 		timezone = stof(tz);
 	}
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
-	Tuple *timezone_tuple = dict_find(iter, KEY_TIMEZONE);
-	Tuple *vib_warn_tuple = dict_find(iter, KEY_VIB_WARN);
-	Tuple *vib_renew_tuple = dict_find(iter, KEY_VIB_RENEW);
+	Tuple *timezone_tuple = dict_find(iter, MESSAGE_KEY_timezone);
+	Tuple *vib_warn_tuple = dict_find(iter, MESSAGE_KEY_vib_warn);
+	Tuple *vib_renew_tuple = dict_find(iter, MESSAGE_KEY_vib_renew);
 
 	if (timezone_tuple) {
-		persist_write_string(KEY_TIMEZONE, timezone_tuple->value->cstring);
+		persist_write_string(MESSAGE_KEY_timezone, timezone_tuple->value->cstring);
 		set_timezone();
 	}
 	if (vib_warn_tuple) {
-		persist_write_bool(KEY_VIB_WARN, vib_warn_tuple->value->uint8);
+		persist_write_bool(MESSAGE_KEY_vib_warn, vib_warn_tuple->value->uint8);
 	}
 	if (vib_renew_tuple) {
-		persist_write_bool(KEY_VIB_RENEW, vib_renew_tuple->value->uint8);
+		persist_write_bool(MESSAGE_KEY_vib_renew, vib_renew_tuple->value->uint8);
 	}
 }
 
@@ -68,10 +79,10 @@ void in_dropped_handler(AppMessageResult reason, void *context) {
 }
 
 void vibration_handler(int current_seconds) {
-	if (current_seconds == 5 && persist_exists(KEY_VIB_WARN) && persist_read_bool(KEY_VIB_WARN)) {
+	if (current_seconds == 5 && persist_exists(MESSAGE_KEY_vib_warn) && persist_read_bool(MESSAGE_KEY_vib_warn)) {
 		vibes_double_pulse();
 	}
-	if (current_seconds == 30 && persist_exists(KEY_VIB_RENEW) && persist_read_bool(KEY_VIB_RENEW)) {
+	if (current_seconds == 30 && persist_exists(MESSAGE_KEY_vib_renew) && persist_read_bool(MESSAGE_KEY_vib_renew)) {
 		vibes_short_pulse();
 	}
 }
@@ -200,7 +211,7 @@ static void app_message_init(void) {
 static void init(void) {
 	app_message_init();
 
-	current_token = persist_exists(KEY_CURRENT_TOKEN) ? persist_read_int(KEY_CURRENT_TOKEN) : 0;
+	current_token = persist_exists(MESSAGE_KEY_CURRENT_TOKEN) ? persist_read_int(MESSAGE_KEY_CURRENT_TOKEN) : 0;
 	current_token_changed = true;
 
 	window = window_create();
@@ -219,7 +230,7 @@ static void init(void) {
 }
 
 static void deinit(void) {
-	persist_write_int(KEY_CURRENT_TOKEN, current_token);
+	persist_write_int(MESSAGE_KEY_CURRENT_TOKEN, current_token);
 	window_destroy(window);
 }
 
