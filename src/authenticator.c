@@ -2,41 +2,20 @@
 #include "configuration.h"
 #include "sha1.h"
 
-static Window *window;
-static TextLayer *label_layer;
-static TextLayer *token_layer;
-static TextLayer *ticker_layer;
+static Window *window=NULL;
+static TextLayer *label_layer=NULL;
+static TextLayer *token_layer=NULL;
+static TextLayer *ticker_layer=NULL;
 
-static int current_token;
-static bool current_token_changed;
-static float timezone = DEFAULT_TIME_ZONE;
+static int current_token=0;
+static bool current_token_changed=false;
+static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
 
-
-float stof(const char* s) {
-	float rez = 0, fact = 1;
-	if (*s == '-') {
-		s++;
-		fact = -1;
-	}
-	for (int point_seen = 0; *s; s++) {
-		if (*s == '.') {
-			point_seen = 1; 
-			continue;
-		}
-		int d = *s - '0';
-		if (d >= 0 && d <= 9) {
-			if (point_seen) fact /= 10.0f;
-			rez = rez * 10.0f + (float)d;
-		}
-	}
-	return rez * fact;
-}
 
 void set_timezone() {
 	if (persist_exists(MESSAGE_KEY_timezone)) {
-		char tz[7];
-		persist_read_string(MESSAGE_KEY_timezone, tz, sizeof(tz));
-		timezone = stof(tz);
+		timezone_mins_offset = persist_read_int(MESSAGE_KEY_timezone);
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "Using timezone minutes offset=%d", timezone_mins_offset);
 	}
 }
 
@@ -46,13 +25,16 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 	Tuple *vib_renew_tuple = dict_find(iter, MESSAGE_KEY_vib_renew);
 
 	if (timezone_tuple) {
-		persist_write_string(MESSAGE_KEY_timezone, timezone_tuple->value->cstring);
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message timezone");
+		persist_write_int(MESSAGE_KEY_timezone, timezone_tuple->value->int32);
 		set_timezone();
 	}
 	if (vib_warn_tuple) {
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_warn");
 		persist_write_bool(MESSAGE_KEY_vib_warn, vib_warn_tuple->value->uint8);
 	}
 	if (vib_renew_tuple) {
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_renew");
 		persist_write_bool(MESSAGE_KEY_vib_renew, vib_renew_tuple->value->uint8);
 	}
 }
@@ -80,9 +62,16 @@ uint32_t get_token() {
 	// TOTP is HOTP with a time based payload
 	// HOTP is HMAC with a truncation function to get a short decimal key
 	uint32_t unix_time = time(NULL);
-	int adjustment = 3600 * timezone;
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "raw unix_time()=%lu", unix_time);
+#ifdef PBL_PLATFORM_APLITE
+	// firmware 3 is supposed to be available for Aplite but in CloudPebble this is locale and not UTC
+	int adjustment = 60 * -1 * timezone_mins_offset;
+
 	unix_time = unix_time - adjustment;
+#endif  // else Firmware 3+ basalt, chalk and later so is UTC already
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time()=%lu", unix_time);
 	unix_time /= 30;
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time mod 30=%lu", unix_time);
 
 	sha1_time[4] = (unix_time >> 24) & 0xFF;
 	sha1_time[5] = (unix_time >> 16) & 0xFF;

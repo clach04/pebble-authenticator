@@ -4,25 +4,6 @@ module.exports = [
         "defaultValue": "Preferences" ,
         "size": 3
     }, 
-    { 
-        "type": "section",
-        "items": [
-            {
-                "type": "heading",
-                "defaultValue": "timezone TODO a) test b) ditch and autodetect"
-            },
-            {
-                "type": "text",
-                "defaultValue": "Only available on compatible platforms."
-            },
-            {
-                "type": "text",
-                "label": "Timezone",
-                "messageKey": "timezone",
-                "defaultValue": "+1"
-            }
-        ]
-    },
     {
         "type": "section",
         "items": [
