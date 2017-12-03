@@ -32,7 +32,8 @@
         "targetPlatforms": [
             "aplite",
             "basalt",
-            "chalk"
+            "chalk",
+            "diorite"
         ],
         "uuid": "011046be-c0c1-464d-af81-381b937447cd",
         "watchapp": {
