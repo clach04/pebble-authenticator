@@ -68,10 +68,8 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 
         // TODO persist it
 
-        // TODO force screen refresh
-    	time_t now = time(NULL);
+        // Force screen refresh (on next second)
         current_token_changed = true;
-    	handle_second_tick(gmtime(&now), SECOND_UNIT);
     }
 }
 
