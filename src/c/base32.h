@@ -1,6 +1,7 @@
 #pragma once
 
-#include "stdint_.h"
+#include <stdint.h>
+typedef unsigned char uint8_t;  // for Pebble
 
 int base32_decode(const uint8_t *encoded, uint8_t *result, int bufSize)
     __attribute__((visibility("hidden")));

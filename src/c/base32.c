@@ -1,7 +1,9 @@
+// from https://github.com/Perlmint/pebbleOTP/blob/master/src/base32.c
 #include <string.h>
 
 #include "base32.h"
 
+// does NOT appear to support padding, e.g. remove trailing "=" from input
 int base32_decode(const uint8_t *encoded, uint8_t *result, int bufSize) {
   int buffer = 0;
   int bitsLeft = 0;
