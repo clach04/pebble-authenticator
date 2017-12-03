@@ -5,6 +5,7 @@ fix icon
 change UUID
 improve config for vib settings (move into settings)
 handle more config settings (move most NUM_SETTINGS usage to use settings count)
+display number with a space in the middle, i.e. 3 digits SPACE 3 digits for easier reading
 consider moving current current_token into settings, con is that it would rewrites all settings on exit (so maybe not)
 */
 #include <pebble.h>
