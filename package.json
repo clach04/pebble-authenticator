@@ -1,7 +1,8 @@
 {
     "author": "Neal",
     "dependencies": {
-        "pebble-clay": "^1.0.1"
+        "pebble-clay": "^1.0.1",
+        "pebble-packet": "^1.2.0"
     },
     "keywords": [],
     "name": "authenticator",
@@ -15,7 +16,9 @@
             "timezone",
             "vib_warn",
             "vib_renew",
-            "CURRENT_TOKEN"
+            "CURRENT_TOKEN",
+            "S00_NAME",
+            "S00_SECRET"
         ],
         "projectType": "native",
         "resources": {

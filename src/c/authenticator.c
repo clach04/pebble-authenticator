@@ -1,6 +1,11 @@
 #include <pebble.h>
+
+#include <pebble-packet/pebble-packet.h>
+
 #include "configuration.h"
 #include "sha1.h"
+#include "base32.h"
+
 
 static Window *window=NULL;
 static TextLayer *label_layer=NULL;
@@ -11,6 +16,7 @@ static int current_token=0;
 static bool current_token_changed=false;
 static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
 
+void handle_second_tick(struct tm *tick_time, TimeUnits units_changed);
 
 void set_timezone() {
 	if (persist_exists(MESSAGE_KEY_timezone)) {
@@ -20,6 +26,9 @@ void set_timezone() {
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
+    int data_len=-1;
+    unsigned char temp_key[10];
+    char * temp_key_base32=NULL;
 	Tuple *timezone_tuple = dict_find(iter, MESSAGE_KEY_timezone);
 	Tuple *vib_warn_tuple = dict_find(iter, MESSAGE_KEY_vib_warn);
 	Tuple *vib_renew_tuple = dict_find(iter, MESSAGE_KEY_vib_renew);
@@ -37,6 +46,33 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_renew");
 		persist_write_bool(MESSAGE_KEY_vib_renew, vib_renew_tuple->value->uint8);
 	}
+
+    if(packet_contains_key(iter, MESSAGE_KEY_S00_NAME))
+    {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S00_NAME");
+        strncpy(otp_labels[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(otp_labels[0])-1);
+        // TODO persist it
+        // need data length...
+        //memcpy(otp_keys[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(otp_keys[0]));  // for later
+    }
+    if(packet_contains_key(iter, MESSAGE_KEY_S00_SECRET))
+    {
+        #define min(x, y)  x < y ? x : y
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S00_SECRET");
+        temp_key_base32 = packet_get_string(iter, MESSAGE_KEY_S00_SECRET);
+        data_len = base32_decode((uint8_t *) temp_key_base32, temp_key, strlen(temp_key_base32)); // potential for buffer overrun? certainly potential for error
+        // check data_len for errors before copying?
+        APP_LOG(APP_LOG_LEVEL_INFO, "MESSAGE_KEY_S00_SECRET (after b32) len %d", (int) data_len);
+        memcpy(otp_keys[0], temp_key, min((unsigned int) data_len, sizeof(otp_keys[0])));
+        otp_sizes[0] = data_len;
+
+        // TODO persist it
+
+        // TODO force screen refresh
+    	time_t now = time(NULL);
+        current_token_changed = true;
+    	handle_second_tick(gmtime(&now), SECOND_UNIT);
+    }
 }
 
 void in_dropped_handler(AppMessageResult reason, void *context) {
