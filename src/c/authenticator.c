@@ -16,9 +16,41 @@ static int current_token=0;
 static bool current_token_changed=false;
 static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
 
+typedef struct persist {
+    int num_entries;
+    char otp_labels[NUM_SECRETS][17];  // labels for otp_keys[]
+    unsigned char otp_keys[NUM_SECRETS][10];  // raw bytes for secrets (the integer in a byte array)
+    int otp_sizes[NUM_SECRETS];  // number of bytes for otp_keys[] entries
+} __attribute__((__packed__)) persist;
+
+persist settings = {
+    .num_entries = NUM_SECRETS,
+    .otp_labels = {
+    	"gtest",
+        "fake",
+    },
+    .otp_keys = {
+    	{ 0x66, 0x6F, 0x6F, 0x6F, 0x6F, 0x6F, 0x6F, 0x6F },  // secret (in base32) "MZXW633PN5XW6===" == 'fooooooo' , See https://github.com/google/google-authenticator/issues/70
+    	{ 0x7C, 0x94, 0x50, 0xEA, 0xA7, 0x2A, 0x08, 0x66, 0xA3, 0x47 },  // secret (in base32) "PSKFB2VHFIEGNI2H"
+    },
+    .otp_sizes = {8,10,},
+};
+
 void handle_second_tick(struct tm *tick_time, TimeUnits units_changed);
 
 void set_timezone() {
+    int value_read=-1;
+    // load config
+    if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS))
+    {
+        value_read = persist_read_data(MESSAGE_KEY_PEBBLE_SETTINGS, &settings, sizeof(settings));
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "tz settings loaded %d bytes", value_read);
+    }
+    else
+    {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "settings NOT loaded, using defaults");
+    }
+
 	if (persist_exists(MESSAGE_KEY_timezone)) {
 		timezone_mins_offset = persist_read_int(MESSAGE_KEY_timezone);
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "Using timezone minutes offset=%d", timezone_mins_offset);
@@ -50,10 +82,10 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     if(packet_contains_key(iter, MESSAGE_KEY_S00_NAME))
     {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S00_NAME");
-        strncpy(otp_labels[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(otp_labels[0])-1);
+        strncpy(settings.otp_labels[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(settings.otp_labels[0])-1);
         // TODO persist it
         // need data length...
-        //memcpy(otp_keys[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(otp_keys[0]));  // for later
+        //memcpy(settings.otp_keys[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(settings.otp_keys[0]));  // for later
     }
     if(packet_contains_key(iter, MESSAGE_KEY_S00_SECRET))
     {
@@ -63,13 +95,28 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
         data_len = base32_decode((uint8_t *) temp_key_base32, temp_key, strlen(temp_key_base32)); // potential for buffer overrun? certainly potential for error
         // check data_len for errors before copying?
         APP_LOG(APP_LOG_LEVEL_INFO, "MESSAGE_KEY_S00_SECRET (after b32) len %d", (int) data_len);
-        memcpy(otp_keys[0], temp_key, min((unsigned int) data_len, sizeof(otp_keys[0])));
-        otp_sizes[0] = data_len;
+        memcpy(settings.otp_keys[0], temp_key, min((unsigned int) data_len, sizeof(settings.otp_keys[0])));
+        settings.otp_sizes[0] = data_len;
 
         // TODO persist it
 
         // Force screen refresh (on next second)
         current_token_changed = true;
+    }
+    if (current_token_changed)
+    {
+        int value_written=-1;
+
+        value_written = persist_write_data(MESSAGE_KEY_PEBBLE_SETTINGS, &settings, sizeof(settings));
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "write settings: %d", value_written);
+        if (value_written >= 0)  // TODO compare with sizeof()?
+        {
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "write settings SUCCESS");
+        }
+        else
+        {
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "write settings FAILURE");
+        }
     }
 }
 
@@ -113,7 +160,7 @@ uint32_t get_token() {
 	sha1_time[7] = unix_time & 0xFF;
 
 	// First get the HMAC hash of the time payload with the shared key
-	sha1_initHmac(&s, otp_keys[current_token], otp_sizes[current_token]);
+	sha1_initHmac(&s, settings.otp_keys[current_token], settings.otp_sizes[current_token]);
 	sha1_write(&s, sha1_time, 8);
 	sha1_resultHmac(&s);
 
@@ -142,7 +189,7 @@ void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 		static char token_text[] = "000000";
 		snprintf(token_text, sizeof(token_text), "%06lu", get_token());
 
-		text_layer_set_text(label_layer, otp_labels[current_token]);
+		text_layer_set_text(label_layer, settings.otp_labels[current_token]);
 		text_layer_set_text(token_layer, token_text);
 	}
 

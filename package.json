@@ -18,7 +18,8 @@
             "vib_renew",
             "CURRENT_TOKEN",
             "S00_NAME",
-            "S00_SECRET"
+            "S00_SECRET",
+            "PEBBLE_SETTINGS"
         ],
         "projectType": "native",
         "resources": {
