@@ -1,3 +1,12 @@
+/*
+TODO
+
+fix icon
+change UUID
+improve config for vib settings (move into settings)
+handle more config settings (move most NUM_SETTINGS usage to use settings count)
+consider moving current current_token into settings, con is that it would rewrites all settings on exit (so maybe not)
+*/
 #include <pebble.h>
 
 #include <pebble-packet/pebble-packet.h>

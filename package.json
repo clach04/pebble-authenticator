@@ -1,16 +1,16 @@
 {
-    "author": "Neal",
+    "author": "clach04",
     "dependencies": {
         "pebble-clay": "^1.0.1",
         "pebble-packet": "^1.2.0"
     },
     "keywords": [],
-    "name": "authenticator",
+    "name": "clayauthenticator",
     "pebble": {
         "capabilities": [
             "configurable"
         ],
-        "displayName": "Authenticator",
+        "displayName": "ClayAuthenticator",
         "enableMultiJS": true,
         "messageKeys": [
             "timezone",
