@@ -21,6 +21,8 @@ More info on how to set that up found [here](https://developer.getpebble.com/2/g
 
 Uses Clay.
 
+See https://m.connectedly.com/how-get-your-two-step-verification-codes-your-pebble for how to get secrets onto phone/pebble.
+
 ## Install
 
 	$ pebble build
