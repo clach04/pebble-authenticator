@@ -196,8 +196,12 @@ void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 	if (current_token_changed || current_seconds == 30) {
 		current_token_changed = false;
 
-		static char token_text[] = "000000";
-		snprintf(token_text, sizeof(token_text), "%06lu", get_token());
+		static char token_text[] = "000:000";  // extra character to break up spacing
+		uint32_t token = get_token();
+		snprintf(token_text, sizeof(token_text), "%03lu-%03lu", token / 1000, token % 1000);  // BITHAM_34_MEDIUM_NUMBERS has '-' but missing space
+		//snprintf(token_text, sizeof(token_text), "%06lu", get_token());
+        //APP_LOG(APP_LOG_LEVEL_DEBUG, "token num %06lu", token);
+        //APP_LOG(APP_LOG_LEVEL_DEBUG, "token_text %s", token_text);
 
 		text_layer_set_text(label_layer, settings.otp_labels[current_token]);
 		text_layer_set_text(token_layer, token_text);
