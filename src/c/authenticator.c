@@ -99,14 +99,17 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     int data_len=-1;
     unsigned char temp_key[10];
     char * temp_key_base32=NULL;
+#ifdef PBL_PLATFORM_APLITE
 	Tuple *timezone_tuple = dict_find(iter, MESSAGE_KEY_timezone);
 
-    reset_timeout();
 	if (timezone_tuple) {
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message timezone");
-		persist_write_int(MESSAGE_KEY_timezone, timezone_tuple->value->int32);
-		set_timezone();
+		timezone_mins_offset = timezone_tuple->value->int32;
+		persist_write_int(MESSAGE_KEY_timezone, timezone_mins_offset);
 	}
+#endif // PBL_PLATFORM_APLITE
+
+    reset_timeout();
 
     if(packet_contains_key(iter, MESSAGE_KEY_vib_warn))
     {
