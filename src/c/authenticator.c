@@ -21,8 +21,10 @@ static TextLayer *ticker_layer=NULL;
 
 static int current_token=0;
 static bool current_token_changed=false;
-static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
 time_t timeout_timer=0;
+#ifdef PBL_PLATFORM_APLITE
+    static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
+#endif // PBL_PLATFORM_APLITE
 
 #define NUM_SECRETS 2
 
@@ -72,7 +74,7 @@ void set_timezone() {
     }
     else
     {
-        persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);
+        persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);  // FIXME here for debug, this is unreleased so no need for this
     }
 
     if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS))
@@ -85,10 +87,12 @@ void set_timezone() {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "settings NOT loaded, using defaults");
     }
 
+#ifdef PBL_PLATFORM_APLITE
 	if (persist_exists(MESSAGE_KEY_timezone)) {
 		timezone_mins_offset = persist_read_int(MESSAGE_KEY_timezone);
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "Using timezone minutes offset=%d", timezone_mins_offset);
 	}
+#endif // PBL_PLATFORM_APLITE
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
