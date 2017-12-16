@@ -4,7 +4,6 @@ TODO
 add more entries
 change UUID
 handle more config settings (move most NUM_SETTINGS usage to use settings count)
-improve config for vib settings (move into settings)
 consider moving current current_token into settings, con is that it would rewrites all settings on exit (so maybe not)
 */
 #include <pebble.h>
@@ -35,6 +34,7 @@ typedef struct persist {
     int otp_sizes[NUM_SECRETS];  // number of bytes for otp_keys[] entries
     int time_out_period;
     bool vib_warn;
+    bool vib_renew;
 } __attribute__((__packed__)) persist;
 
 persist settings = {
@@ -50,6 +50,7 @@ persist settings = {
     .otp_sizes = {8,10,},
     .time_out_period = 2 * 60,  // 2 minutes
     .vib_warn = false,
+    .vib_renew = false,
 };
 
 void handle_second_tick(struct tm *tick_time, TimeUnits units_changed);
@@ -95,7 +96,6 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     unsigned char temp_key[10];
     char * temp_key_base32=NULL;
 	Tuple *timezone_tuple = dict_find(iter, MESSAGE_KEY_timezone);
-	Tuple *vib_renew_tuple = dict_find(iter, MESSAGE_KEY_vib_renew);
 
     reset_timeout();
 	if (timezone_tuple) {
@@ -103,15 +103,16 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 		persist_write_int(MESSAGE_KEY_timezone, timezone_tuple->value->int32);
 		set_timezone();
 	}
-	if (vib_renew_tuple) {
-		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_renew");
-		persist_write_bool(MESSAGE_KEY_vib_renew, vib_renew_tuple->value->uint8);
-	}
 
     if(packet_contains_key(iter, MESSAGE_KEY_vib_warn))
     {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_warn");
         settings.vib_warn = packet_get_boolean(iter, MESSAGE_KEY_vib_warn);
+    }
+    if(packet_contains_key(iter, MESSAGE_KEY_vib_renew))
+    {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_renew");
+        settings.vib_renew = packet_get_boolean(iter, MESSAGE_KEY_vib_renew);
     }
 
     if(packet_contains_key(iter, MESSAGE_KEY_TIME_OUT_PERIOD))
@@ -192,10 +193,12 @@ void in_dropped_handler(AppMessageResult reason, void *context) {
 }
 
 void vibration_handler(int current_seconds) {
-	if (current_seconds == 5 && settings.vib_warn) {
+	if (current_seconds == 5 && settings.vib_renew)
+    {
 		vibes_double_pulse();
 	}
-	if (current_seconds == 30 && persist_exists(MESSAGE_KEY_vib_renew) && persist_read_bool(MESSAGE_KEY_vib_renew)) {
+	if (current_seconds == 30 && settings.vib_renew)
+    {
 		vibes_short_pulse();
 	}
 }
