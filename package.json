@@ -19,7 +19,8 @@
             "CURRENT_TOKEN",
             "S00_NAME",
             "S00_SECRET",
-            "PEBBLE_SETTINGS"
+            "PEBBLE_SETTINGS",
+            "PEBBLE_SETTINGS_VERSION"
         ],
         "projectType": "native",
         "resources": {

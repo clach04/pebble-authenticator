@@ -1,11 +1,10 @@
 /*
 TODO
 
-add delete config check if config is different (https://developer.pebble.com/guides/events-and-services/persistent-storage/)
 add more entries
 change UUID
-improve config for vib settings (move into settings)
 handle more config settings (move most NUM_SETTINGS usage to use settings count)
+improve config for vib settings (move into settings)
 consider moving current current_token into settings, con is that it would rewrites all settings on exit (so maybe not)
 */
 #include <pebble.h>
@@ -28,6 +27,7 @@ static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
 time_t timeout_timer=0;
 time_t timout_period=2 * 60;  // TODO move into settings
 
+int config_version=2; // Increment if persist settings changes structure
 typedef struct persist {
     int num_entries;
     char otp_labels[NUM_SECRETS][17];  // labels for otp_keys[]
@@ -58,6 +58,18 @@ void reset_timeout()
 void set_timezone() {
     int value_read=-1;
     // load config
+    if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION))
+    {
+        if (config_version > persist_read_int(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION))
+        {
+            persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);
+        }
+    }
+    else
+    {
+        persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);
+    }
+
     if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS))
     {
         value_read = persist_read_data(MESSAGE_KEY_PEBBLE_SETTINGS, &settings, sizeof(settings));
@@ -136,6 +148,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
             APP_LOG(APP_LOG_LEVEL_DEBUG, "write settings FAILURE");
         }
     }
+    persist_write_int(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION, config_version);
 }
 
 void in_dropped_handler(AppMessageResult reason, void *context) {
