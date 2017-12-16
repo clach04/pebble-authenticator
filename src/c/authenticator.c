@@ -2,7 +2,6 @@
 TODO
 
 add more entries
-change UUID
 handle more config settings (move most NUM_SETTINGS usage to use settings count)
 consider moving current current_token into settings, con is that it would rewrites all settings on exit (so maybe not)
 */
