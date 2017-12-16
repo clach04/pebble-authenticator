@@ -1,7 +1,7 @@
 var Clay = require('pebble-clay');
 var clayConfig = require('./config');
-//var clay = new Clay(clayConfig);
-var clay = new Clay(clayConfig, null, { autoHandleEvents: false });
+var clay = new Clay(clayConfig);
+//var clay = new Clay(clayConfig, null, { autoHandleEvents: false });
 
 Pebble.addEventListener('ready', function(e) {
     var timezone_offset = new Date().getTimezoneOffset();  // time-zone offset from UTC, in minutes, for the current locale.
@@ -19,7 +19,7 @@ Pebble.addEventListener('ready', function(e) {
 
 });
 
-//*
+/*
 // as autoHandleEvents set to false need a basic showConfigurationa ction
 Pebble.addEventListener('showConfiguration', function(e) {
     Pebble.openURL(clay.generateUrl());
@@ -44,4 +44,4 @@ Pebble.addEventListener('webviewclosed', function(e) {
         //console.log(JSON.stringify(e));
     });
 });
-//*/
+*/
