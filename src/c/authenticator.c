@@ -207,16 +207,16 @@ uint32_t get_token() {
 	// TOTP is HOTP with a time based payload
 	// HOTP is HMAC with a truncation function to get a short decimal key
 	uint32_t unix_time = time(NULL);
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "raw unix_time()=%lu", unix_time);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "raw unix_time()=%lu", unix_time);
 #ifdef PBL_PLATFORM_APLITE
 	// firmware 3 is supposed to be available for Aplite but in CloudPebble this is locale and not UTC
 	int adjustment = 60 * -1 * timezone_mins_offset;
 
 	unix_time = unix_time - adjustment;
 #endif  // else Firmware 3+ basalt, chalk and later so is UTC already
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time()=%lu", unix_time);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time()=%lu", unix_time);
 	unix_time /= 30;
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time mod 30=%lu", unix_time);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time mod 30=%lu", unix_time);
 
 	sha1_time[4] = (unix_time >> 24) & 0xFF;
 	sha1_time[5] = (unix_time >> 16) & 0xFF;
