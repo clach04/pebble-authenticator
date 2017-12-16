@@ -1,7 +1,7 @@
 var Clay = require('pebble-clay');
 var clayConfig = require('./config');
-var clay = new Clay(clayConfig);
-//var clay = new Clay(clayConfig, null, { autoHandleEvents: false });
+//var clay = new Clay(clayConfig);
+var clay = new Clay(clayConfig, null, { autoHandleEvents: false });
 
 Pebble.addEventListener('ready', function(e) {
     var timezone_offset = new Date().getTimezoneOffset();  // time-zone offset from UTC, in minutes, for the current locale.
@@ -36,6 +36,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
     var dict = clay.getSettings(e.response);
     //dict.TIME_OUT_PERIOD = parseInt(dict.TIME_OUT_PERIOD)
 
+    console.log('string config data length=' + JSON.stringify(e).length);
     // Send settings values to watch side
     Pebble.sendAppMessage(dict, function(e) {
         console.log('Sent config data to Pebble');
