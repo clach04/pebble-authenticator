@@ -26,7 +26,7 @@ time_t timeout_timer=0;
     static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
 #endif // PBL_PLATFORM_APLITE
 
-#define NUM_SECRETS 2
+#define NUM_SECRETS 3
 
 int config_version=2; // Increment if persist settings changes structure
 typedef struct persist {
@@ -180,6 +180,8 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     DO_SETTINGS_SECRET(0)
     DO_SETTINGS_NAME(1)
     DO_SETTINGS_SECRET(1)
+    DO_SETTINGS_NAME(2)
+    DO_SETTINGS_SECRET(2)
 
     if (current_token_changed)
     {
