@@ -62,8 +62,12 @@ void reset_timeout()
     timeout_timer = time(NULL);
 }
 
-void set_timezone() {
+void get_config() {
     int value_read=-1;
+
+    current_token = persist_exists(MESSAGE_KEY_CURRENT_TOKEN) ? persist_read_int(MESSAGE_KEY_CURRENT_TOKEN) : 0;
+    current_token_changed = true;
+
     // load config
     if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION))
     {
@@ -74,7 +78,7 @@ void set_timezone() {
     }
     else
     {
-        persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);  // FIXME here for debug, this is unreleased so no need for this
+        persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);  // FIXME here for debug, this is unreleased app so no need for this
     }
 
     if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS))
@@ -362,8 +366,7 @@ static void app_message_init(void) {
 static void init(void) {
 	app_message_init();
 
-	current_token = persist_exists(MESSAGE_KEY_CURRENT_TOKEN) ? persist_read_int(MESSAGE_KEY_CURRENT_TOKEN) : 0;
-	current_token_changed = true;
+    get_config();
 
 	window = window_create();
 	window_set_click_config_provider(window, click_config_provider);
@@ -374,7 +377,6 @@ static void init(void) {
 	window_stack_push(window, true /* animated */);
 	window_set_background_color(window, GColorBlack);
 
-	set_timezone();
     reset_timeout();
 
 	time_t now = time(NULL);
