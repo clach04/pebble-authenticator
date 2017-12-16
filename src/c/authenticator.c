@@ -1,11 +1,11 @@
 /*
 TODO
 
-fix icon
+add delete config check if config is different (https://developer.pebble.com/guides/events-and-services/persistent-storage/)
+add more entries
 change UUID
 improve config for vib settings (move into settings)
 handle more config settings (move most NUM_SETTINGS usage to use settings count)
-display number with a space in the middle, i.e. 3 digits SPACE 3 digits for easier reading
 consider moving current current_token into settings, con is that it would rewrites all settings on exit (so maybe not)
 */
 #include <pebble.h>
@@ -25,6 +25,8 @@ static TextLayer *ticker_layer=NULL;
 static int current_token=0;
 static bool current_token_changed=false;
 static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
+time_t timeout_timer=0;
+time_t timout_period=2 * 60;  // TODO move into settings
 
 typedef struct persist {
     int num_entries;
@@ -47,6 +49,11 @@ persist settings = {
 };
 
 void handle_second_tick(struct tm *tick_time, TimeUnits units_changed);
+
+void reset_timeout()
+{
+    timeout_timer = time(NULL);
+}
 
 void set_timezone() {
     int value_read=-1;
@@ -75,6 +82,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 	Tuple *vib_warn_tuple = dict_find(iter, MESSAGE_KEY_vib_warn);
 	Tuple *vib_renew_tuple = dict_find(iter, MESSAGE_KEY_vib_renew);
 
+    reset_timeout();
 	if (timezone_tuple) {
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message timezone");
 		persist_write_int(MESSAGE_KEY_timezone, timezone_tuple->value->int32);
@@ -191,6 +199,16 @@ uint32_t get_token() {
 void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 	int current_seconds = 30 - (tick_time->tm_sec % 30);
 
+    if (timout_period != 0)
+    {
+        if (time(NULL) - timeout_timer >= timout_period)
+        {
+            // From https://forums.pebble.com/t/solved-proper-watch-app-exit-method/9976
+            // https://developer.pebble.com/docs/c/User_Interface/Window_Stack/#window_stack_pop_all
+            window_stack_pop_all(true);
+        }
+    }
+
 	vibration_handler(current_seconds);
 
 	if (current_token_changed || current_seconds == 30) {
@@ -223,6 +241,7 @@ static void click_handler(ClickRecognizerRef recognizer, Window *window) {
 			current_token_changed = true;
 			break;
 	}
+    reset_timeout();
 	time_t now = time(NULL);
 	handle_second_tick(gmtime(&now), SECOND_UNIT);
 }
@@ -291,6 +310,7 @@ static void init(void) {
 	window_set_background_color(window, GColorBlack);
 
 	set_timezone();
+    reset_timeout();
 
 	time_t now = time(NULL);
 	handle_second_tick(gmtime(&now), SECOND_UNIT);
