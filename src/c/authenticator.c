@@ -11,7 +11,6 @@ consider moving current current_token into settings, con is that it would rewrit
 
 #include <pebble-packet/pebble-packet.h>
 
-#include "configuration.h"
 #include "sha1.h"
 #include "base32.h"
 
@@ -26,6 +25,8 @@ static bool current_token_changed=false;
 static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
 time_t timeout_timer=0;
 time_t timout_period=2 * 60;  // TODO move into settings
+
+#define NUM_SECRETS 2
 
 int config_version=2; // Increment if persist settings changes structure
 typedef struct persist {
@@ -246,12 +247,18 @@ void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 static void click_handler(ClickRecognizerRef recognizer, Window *window) {
 	switch ((int)click_recognizer_get_button_id(recognizer)) {
 		case BUTTON_ID_UP:
+            do
+            {
 			current_token = (current_token - 1 + NUM_SECRETS) % NUM_SECRETS;
 			current_token_changed = true;
+            } while (settings.otp_sizes[current_token] == 0);
 			break;
 		case BUTTON_ID_DOWN:
+            do
+            {
 			current_token = (current_token + 1) % NUM_SECRETS;
 			current_token_changed = true;
+            } while (settings.otp_sizes[current_token] == 0);
 			break;
 	}
     reset_timeout();
