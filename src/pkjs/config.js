@@ -22,6 +22,16 @@ module.exports = [
                 "label": "On new token",
                 "messageKey": "vib_renew",
                 "defaultValue": false
+            },
+            {
+                "type": "slider",
+                "label": "Timeout",
+                "description": "Inactivity timeout in secs (zero = no timeout)",
+                "messageKey": "TIME_OUT_PERIOD",
+                "defaultValue": 120,  // 2 * 60
+                "min": 0,
+                "max": +720,
+                "step": 1
             }
         ]
     },

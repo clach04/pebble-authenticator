@@ -24,7 +24,6 @@ static int current_token=0;
 static bool current_token_changed=false;
 static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
 time_t timeout_timer=0;
-time_t timout_period=2 * 60;  // TODO move into settings
 
 #define NUM_SECRETS 2
 
@@ -34,6 +33,7 @@ typedef struct persist {
     char otp_labels[NUM_SECRETS][17];  // labels for otp_keys[]
     unsigned char otp_keys[NUM_SECRETS][10];  // raw bytes for secrets (the integer in a byte array)
     int otp_sizes[NUM_SECRETS];  // number of bytes for otp_keys[] entries
+    int time_out_period;
 } __attribute__((__packed__)) persist;
 
 persist settings = {
@@ -47,6 +47,7 @@ persist settings = {
     	{ 0x7C, 0x94, 0x50, 0xEA, 0xA7, 0x2A, 0x08, 0x66, 0xA3, 0x47 },  // secret (in base32) "PSKFB2VHFIEGNI2H"
     },
     .otp_sizes = {8,10,},
+    .time_out_period = 2 * 60,  // 2 minutes
 };
 
 void handle_second_tick(struct tm *tick_time, TimeUnits units_changed);
@@ -110,13 +111,17 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 		persist_write_bool(MESSAGE_KEY_vib_renew, vib_renew_tuple->value->uint8);
 	}
 
+    if(packet_contains_key(iter, MESSAGE_KEY_TIME_OUT_PERIOD))
+    {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_TIME_OUT_PERIOD");
+        settings.time_out_period = packet_get_integer(iter, MESSAGE_KEY_TIME_OUT_PERIOD);
+        current_token_changed = true;  // Force screen refresh (on next second) and persist settings
+    }
     if(packet_contains_key(iter, MESSAGE_KEY_S00_NAME))
     {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S00_NAME");
         strncpy(settings.otp_labels[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(settings.otp_labels[0])-1);
-        // TODO persist it
-        // need data length...
-        //memcpy(settings.otp_keys[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(settings.otp_keys[0]));  // for later
+        current_token_changed = true;  // Force screen refresh (on next second) and persist settings
     }
     if(packet_contains_key(iter, MESSAGE_KEY_S00_SECRET))
     {
@@ -129,10 +134,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
         memcpy(settings.otp_keys[0], temp_key, min((unsigned int) data_len, sizeof(settings.otp_keys[0])));
         settings.otp_sizes[0] = data_len;
 
-        // TODO persist it
-
-        // Force screen refresh (on next second)
-        current_token_changed = true;
+        current_token_changed = true;  // Force screen refresh (on next second) and persist settings
     }
     if (current_token_changed)
     {
@@ -213,9 +215,9 @@ uint32_t get_token() {
 void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 	int current_seconds = 30 - (tick_time->tm_sec % 30);
 
-    if (timout_period != 0)
+    if (settings.time_out_period != 0)
     {
-        if (time(NULL) - timeout_timer >= timout_period)
+        if (time(NULL) - timeout_timer >= settings.time_out_period)
         {
             // From https://forums.pebble.com/t/solved-proper-watch-app-exit-method/9976
             // https://developer.pebble.com/docs/c/User_Interface/Window_Stack/#window_stack_pop_all
