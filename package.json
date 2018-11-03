@@ -23,7 +23,9 @@
             "PEBBLE_SETTINGS_VERSION",
             "TIME_OUT_PERIOD",
             "S01_NAME",
-            "S01_SECRET"
+            "S01_SECRET",
+            "S02_NAME",
+            "S02_SECRET"
         ],
         "projectType": "native",
         "resources": {

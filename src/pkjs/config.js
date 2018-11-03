@@ -81,6 +81,26 @@ module.exports = [
                 "attributes": {
                     "limit": 16
                 }
+            },
+            {
+                "type": "input",
+                "label": "Name 03",
+                "description": "Name limited to 16 bytes",
+                "messageKey": "S02_NAME",
+                "defaultValue": "",
+                "attributes": {
+                    "limit": 16
+                }
+            },
+            {
+                "type": "input",
+                "label": "Secret 03",
+                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "messageKey": "S02_SECRET",
+                "defaultValue": "",
+                "attributes": {
+                    "limit": 16
+                }
             }
         ]
     },
