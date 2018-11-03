@@ -4,7 +4,7 @@
         "pebble-clay": "^1.0.1",
         "pebble-packet": "^1.2.0"
     },
-    "keywords": [],
+    "keywords": ["pebble-app"],
     "name": "clayauthenticator",
     "pebble": {
         "capabilities": [
