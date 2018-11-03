@@ -1,4 +1,4 @@
-# generated via; pebble new-project newproj
+# generated via; pebble new-project newproj - then modified to use app.js as entry point (like Cloudpebble used to do)
 # This file is the default set of rules to compile a Pebble application.
 #
 # Feel free to customize this to your needs.
@@ -51,4 +51,4 @@ def build(ctx):
                    js=ctx.path.ant_glob(['src/pkjs/**/*.js',
                                          'src/pkjs/**/*.json',
                                          'src/common/**/*.js']),
-                   js_entry_file='src/pkjs/index.js')
+                   js_entry_file='src/pkjs/app.js')
