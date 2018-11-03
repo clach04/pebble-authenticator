@@ -6,11 +6,11 @@ Pebble.addEventListener('showConfiguration', function(e) {
 	if (options === null) {
 		console.log('options have not been set');
 		console.log('showing configuration');
-		var uri = 'https://rawgithub.com/Neal/pebble-authenticator/master/html/configuration.html';
+		var uri = 'https://clach04.github.io/pebble-authenticator/configuration.html';
 	} else {
 		console.log('read options: ' + JSON.stringify(options));
 		console.log('showing configuration');
-		var uri = 'https://rawgithub.com/Neal/pebble-authenticator/master/html/configuration.html?' +
+		var uri = 'https://clach04.github.io/pebble-authenticator/configuration.html?' +
 					'timezone=' + encodeURIComponent(options['timezone']) +
 					'&vib_warn=' + encodeURIComponent(options['vib_warn']) +
 					'&vib_renew=' + encodeURIComponent(options['vib_renew']);
