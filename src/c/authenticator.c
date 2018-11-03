@@ -48,6 +48,7 @@ void get_config() {
         if (config_version > persist_read_int(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION))
         {
             persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);
+            persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS);
         }
     }
     /*
@@ -60,7 +61,8 @@ void get_config() {
     if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS))
     {
         value_read = persist_read_data(MESSAGE_KEY_PEBBLE_SETTINGS, &settings, sizeof(settings));
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "tz settings loaded %d bytes", value_read);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "OTP settings loaded %d bytes", value_read);
+        // for 5 entries size read is 165 bytes
     }
     else
     {

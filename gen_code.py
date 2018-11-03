@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 # Py2 or Py3
 
-number_of_slots = 3
+import sys
+
+
+try:
+    number_of_slots = int(sys.argv[1])
+except:  # yep anything goes
+    number_of_slots = 5
 
 
 # f-strings does not appear to support escaping {}
 # can't be bothered to use template
 
+
+# NOTE defaults to empty - no defaults wil lbe generated for config
 # Clay Config - config.js
 template = ''',
             {
@@ -28,8 +36,7 @@ template = ''',
                 "attributes": {
                     "limit": 16
                 }
-            }
-'''
+            }'''
 
 
 # messageKeys entries - package.js
@@ -79,7 +86,9 @@ for num in range(1, number_of_slots + 1):
 	t = configload_template.replace('{index_num}', index_num).replace('{num}', num)
 	output.append(t)
 print("")
-print("".join(output))
+s = "".join(output)
+s = s.replace('\n', '\\\n')
+print(s)
 print("")
 print('-' * 65)
 print("")

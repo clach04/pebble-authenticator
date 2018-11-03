@@ -22,10 +22,16 @@
             "PEBBLE_SETTINGS",
             "PEBBLE_SETTINGS_VERSION",
             "TIME_OUT_PERIOD",
-            "S01_NAME",
-            "S01_SECRET",
-            "S02_NAME",
-            "S02_SECRET"
+"S00_NAME",
+"S00_SECRET",
+"S01_NAME",
+"S01_SECRET",
+"S02_NAME",
+"S02_SECRET",
+"S03_NAME",
+"S03_SECRET",
+"S04_NAME",
+"S04_SECRET"
         ],
         "projectType": "native",
         "resources": {
@@ -50,5 +56,5 @@
             "watchface": false
         }
     },
-    "version": "2.0.0"
+    "version": "2.1.0"
 }

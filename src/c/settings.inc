@@ -1,9 +1,9 @@
 
 // potentially machine generated
 
-#define NUM_SECRETS 3
+#define NUM_SECRETS 5
 
-int config_version=2; // Increment if persist settings changes structure
+int config_version=3; // Increment if persist settings changes structure
 typedef struct persist {
     int num_entries;
     char otp_labels[NUM_SECRETS][17];  // labels for otp_keys[]
@@ -39,5 +39,9 @@ persist settings = {
     DO_SETTINGS_NAME(1)\
     DO_SETTINGS_SECRET(1)\
     DO_SETTINGS_NAME(2)\
-    DO_SETTINGS_SECRET(2)
+    DO_SETTINGS_SECRET(2)\
+    DO_SETTINGS_NAME(3)\
+    DO_SETTINGS_SECRET(3)\
+    DO_SETTINGS_NAME(4)\
+    DO_SETTINGS_SECRET(4)
 // FIXME consider making this a C function?

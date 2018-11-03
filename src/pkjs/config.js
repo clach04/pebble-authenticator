@@ -42,6 +42,8 @@ module.exports = [
                 "type": "heading",
                 "defaultValue": "Entries"
             },
+
+
             {
                 "type": "input",
                 "label": "Name 01",
@@ -67,7 +69,7 @@ module.exports = [
                 "label": "Name 02",
                 "description": "Name limited to 16 bytes",
                 "messageKey": "S01_NAME",
-                "defaultValue": "test",
+                "defaultValue": "fake",
                 "attributes": {
                     "limit": 16
                 }
@@ -101,7 +103,50 @@ module.exports = [
                 "attributes": {
                     "limit": 16
                 }
+            },
+            {
+                "type": "input",
+                "label": "Name 04",
+                "description": "Name limited to 16 bytes",
+                "messageKey": "S03_NAME",
+                "defaultValue": "",
+                "attributes": {
+                    "limit": 16
+                }
+            },
+            {
+                "type": "input",
+                "label": "Secret 04",
+                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "messageKey": "S03_SECRET",
+                "defaultValue": "",
+                "attributes": {
+                    "limit": 16
+                }
+            },
+            {
+                "type": "input",
+                "label": "Name 05",
+                "description": "Name limited to 16 bytes",
+                "messageKey": "S04_NAME",
+                "defaultValue": "",
+                "attributes": {
+                    "limit": 16
+                }
+            },
+            {
+                "type": "input",
+                "label": "Secret 05",
+                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "messageKey": "S04_SECRET",
+                "defaultValue": "",
+                "attributes": {
+                    "limit": 16
+                }
             }
+
+
+
         ]
     },
     {
