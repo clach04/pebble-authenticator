@@ -1,5 +1,7 @@
-number_of_slots = 3
+#!/usr/bin/env python
+# Py2 or Py3
 
+number_of_slots = 3
 
 
 # f-strings does not appear to support escaping {}
