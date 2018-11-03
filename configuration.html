@@ -107,10 +107,10 @@
 
 			$().ready(function() {
 				$('#b-cancel').click(function() {
-					document.location = 'pebblejs://close#';
+					document.location = getQueryVariable('return_to', 'pebblejs://close#cancel');
 				});
 				$('#b-submit').click(function() {
-					document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(saveOptions()));
+					document.location = getQueryVariable('return_to', 'pebblejs://close#') + encodeURIComponent(JSON.stringify(saveOptions()));
 				});
 				if (getQueryVariable('timezone')) {
 					$('#timezone').val(getQueryVariable('timezone')).selectmenu('refresh');;
