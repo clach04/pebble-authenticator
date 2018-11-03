@@ -1,18 +1,15 @@
 /*
 TODO
 
-fix icon
+add more entries
 change UUID
-improve config for vib settings (move into settings)
 handle more config settings (move most NUM_SETTINGS usage to use settings count)
-display number with a space in the middle, i.e. 3 digits SPACE 3 digits for easier reading
 consider moving current current_token into settings, con is that it would rewrites all settings on exit (so maybe not)
 */
 #include <pebble.h>
 
-#include <pebble-packet/pebble-packet.h>
+#include <pebble-packet/pebble-packet.h>  // https://github.com/C-D-Lewis/pebble-packet/blob/master/include/pebble-packet.h
 
-#include "configuration.h"
 #include "sha1.h"
 #include "base32.h"
 
@@ -24,13 +21,22 @@ static TextLayer *ticker_layer=NULL;
 
 static int current_token=0;
 static bool current_token_changed=false;
-static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
+time_t timeout_timer=0;
+#ifdef PBL_PLATFORM_APLITE
+    static int timezone_mins_offset=0;  // i.e. UTC/GMT-0 only used for Aplite
+#endif // PBL_PLATFORM_APLITE
 
+#define NUM_SECRETS 2
+
+int config_version=2; // Increment if persist settings changes structure
 typedef struct persist {
     int num_entries;
     char otp_labels[NUM_SECRETS][17];  // labels for otp_keys[]
     unsigned char otp_keys[NUM_SECRETS][10];  // raw bytes for secrets (the integer in a byte array)
     int otp_sizes[NUM_SECRETS];  // number of bytes for otp_keys[] entries
+    int time_out_period;
+    bool vib_warn;
+    bool vib_renew;
 } __attribute__((__packed__)) persist;
 
 persist settings = {
@@ -44,13 +50,33 @@ persist settings = {
     	{ 0x7C, 0x94, 0x50, 0xEA, 0xA7, 0x2A, 0x08, 0x66, 0xA3, 0x47 },  // secret (in base32) "PSKFB2VHFIEGNI2H"
     },
     .otp_sizes = {8,10,},
+    .time_out_period = 2 * 60,  // 2 minutes
+    .vib_warn = false,
+    .vib_renew = false,
 };
 
 void handle_second_tick(struct tm *tick_time, TimeUnits units_changed);
 
+void reset_timeout()
+{
+    timeout_timer = time(NULL);
+}
+
 void set_timezone() {
     int value_read=-1;
     // load config
+    if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION))
+    {
+        if (config_version > persist_read_int(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION))
+        {
+            persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);
+        }
+    }
+    else
+    {
+        persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);  // FIXME here for debug, this is unreleased so no need for this
+    }
+
     if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS))
     {
         value_read = persist_read_data(MESSAGE_KEY_PEBBLE_SETTINGS, &settings, sizeof(settings));
@@ -61,58 +87,96 @@ void set_timezone() {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "settings NOT loaded, using defaults");
     }
 
+#ifdef PBL_PLATFORM_APLITE
 	if (persist_exists(MESSAGE_KEY_timezone)) {
 		timezone_mins_offset = persist_read_int(MESSAGE_KEY_timezone);
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "Using timezone minutes offset=%d", timezone_mins_offset);
 	}
+#endif // PBL_PLATFORM_APLITE
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
     int data_len=-1;
     unsigned char temp_key[10];
     char * temp_key_base32=NULL;
+#ifdef PBL_PLATFORM_APLITE
 	Tuple *timezone_tuple = dict_find(iter, MESSAGE_KEY_timezone);
-	Tuple *vib_warn_tuple = dict_find(iter, MESSAGE_KEY_vib_warn);
-	Tuple *vib_renew_tuple = dict_find(iter, MESSAGE_KEY_vib_renew);
 
 	if (timezone_tuple) {
 		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message timezone");
-		persist_write_int(MESSAGE_KEY_timezone, timezone_tuple->value->int32);
-		set_timezone();
+		timezone_mins_offset = timezone_tuple->value->int32;
+		persist_write_int(MESSAGE_KEY_timezone, timezone_mins_offset);
 	}
-	if (vib_warn_tuple) {
-		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_warn");
-		persist_write_bool(MESSAGE_KEY_vib_warn, vib_warn_tuple->value->uint8);
-	}
-	if (vib_renew_tuple) {
-		APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_renew");
-		persist_write_bool(MESSAGE_KEY_vib_renew, vib_renew_tuple->value->uint8);
-	}
+#endif // PBL_PLATFORM_APLITE
 
+    reset_timeout();
+
+    if(packet_contains_key(iter, MESSAGE_KEY_vib_warn))
+    {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_warn");
+        settings.vib_warn = packet_get_boolean(iter, MESSAGE_KEY_vib_warn);
+    }
+    if(packet_contains_key(iter, MESSAGE_KEY_vib_renew))
+    {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message vib_renew");
+        settings.vib_renew = packet_get_boolean(iter, MESSAGE_KEY_vib_renew);
+    }
+
+    if(packet_contains_key(iter, MESSAGE_KEY_TIME_OUT_PERIOD))
+    {
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_TIME_OUT_PERIOD");
+        settings.time_out_period = packet_get_integer(iter, MESSAGE_KEY_TIME_OUT_PERIOD);
+        current_token_changed = true;  // Force screen refresh (on next second) and persist settings
+    }
+#define min(x, y)  x < y ? x : y
+    /*
     if(packet_contains_key(iter, MESSAGE_KEY_S00_NAME))
     {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S00_NAME");
         strncpy(settings.otp_labels[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(settings.otp_labels[0])-1);
-        // TODO persist it
-        // need data length...
-        //memcpy(settings.otp_keys[0], packet_get_string(iter, MESSAGE_KEY_S00_NAME), sizeof(settings.otp_keys[0]));  // for later
+        current_token_changed = true;  // Force screen refresh (on next second) and persist settings
     }
+
     if(packet_contains_key(iter, MESSAGE_KEY_S00_SECRET))
     {
-        #define min(x, y)  x < y ? x : y
         APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S00_SECRET");
         temp_key_base32 = packet_get_string(iter, MESSAGE_KEY_S00_SECRET);
         data_len = base32_decode((uint8_t *) temp_key_base32, temp_key, strlen(temp_key_base32)); // potential for buffer overrun? certainly potential for error
+        settings.otp_sizes[0] = min(data_len, (int) sizeof(settings.otp_keys[0]));
         // check data_len for errors before copying?
         APP_LOG(APP_LOG_LEVEL_INFO, "MESSAGE_KEY_S00_SECRET (after b32) len %d", (int) data_len);
-        memcpy(settings.otp_keys[0], temp_key, min((unsigned int) data_len, sizeof(settings.otp_keys[0])));
-        settings.otp_sizes[0] = data_len;
+        memcpy(settings.otp_keys[0], temp_key, (unsigned int) data_len);
 
-        // TODO persist it
-
-        // Force screen refresh (on next second)
-        current_token_changed = true;
+        current_token_changed = true;  // Force screen refresh (on next second) and persist settings
     }
+    */
+
+#define DO_SETTINGS_NAME(MACRO_NUM)\
+    if(packet_contains_key(iter, MESSAGE_KEY_S0 ## MACRO_NUM ## _NAME))\
+    {\
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S0" #MACRO_NUM "_NAME");\
+        strncpy(settings.otp_labels[MACRO_NUM], packet_get_string(iter, MESSAGE_KEY_S0 ## MACRO_NUM ## _NAME), sizeof(settings.otp_labels[MACRO_NUM])-1);\
+        current_token_changed = true;  /* Force screen refresh (on next second) and persist settings */  \
+    }
+
+#define DO_SETTINGS_SECRET(MACRO_NUM)\
+    if(packet_contains_key(iter, MESSAGE_KEY_S0 ## MACRO_NUM ## _SECRET))\
+    {\
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S0" #MACRO_NUM "_SECRET");\
+        temp_key_base32 = packet_get_string(iter, MESSAGE_KEY_S0 ## MACRO_NUM ## _SECRET);\
+        data_len = base32_decode((uint8_t *) temp_key_base32, temp_key, strlen(temp_key_base32)); /* potential for buffer overrun? certainly potential for error */ \
+        settings.otp_sizes[MACRO_NUM] = min(data_len, (int) sizeof(settings.otp_keys[MACRO_NUM]));\
+        /* check data_len for errors before copying? */ \
+        APP_LOG(APP_LOG_LEVEL_INFO, "MESSAGE_KEY_S0" #MACRO_NUM "_SECRET (after b32) len %d", (int) data_len);\
+        memcpy(settings.otp_keys[MACRO_NUM], temp_key, (unsigned int) data_len);\
+        current_token_changed = true;  /* Force screen refresh (on next second) and persist settings */ \
+    }
+
+    DO_SETTINGS_NAME(0)
+    DO_SETTINGS_SECRET(0)
+    DO_SETTINGS_NAME(1)
+    DO_SETTINGS_SECRET(1)
+
     if (current_token_changed)
     {
         int value_written=-1;
@@ -128,6 +192,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
             APP_LOG(APP_LOG_LEVEL_DEBUG, "write settings FAILURE");
         }
     }
+    persist_write_int(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION, config_version);
 }
 
 void in_dropped_handler(AppMessageResult reason, void *context) {
@@ -135,10 +200,12 @@ void in_dropped_handler(AppMessageResult reason, void *context) {
 }
 
 void vibration_handler(int current_seconds) {
-	if (current_seconds == 5 && persist_exists(MESSAGE_KEY_vib_warn) && persist_read_bool(MESSAGE_KEY_vib_warn)) {
+	if (current_seconds == 5 && settings.vib_renew)
+    {
 		vibes_double_pulse();
 	}
-	if (current_seconds == 30 && persist_exists(MESSAGE_KEY_vib_renew) && persist_read_bool(MESSAGE_KEY_vib_renew)) {
+	if (current_seconds == 30 && settings.vib_renew)
+    {
 		vibes_short_pulse();
 	}
 }
@@ -153,16 +220,16 @@ uint32_t get_token() {
 	// TOTP is HOTP with a time based payload
 	// HOTP is HMAC with a truncation function to get a short decimal key
 	uint32_t unix_time = time(NULL);
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "raw unix_time()=%lu", unix_time);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "raw unix_time()=%lu", unix_time);
 #ifdef PBL_PLATFORM_APLITE
 	// firmware 3 is supposed to be available for Aplite but in CloudPebble this is locale and not UTC
 	int adjustment = 60 * -1 * timezone_mins_offset;
 
 	unix_time = unix_time - adjustment;
 #endif  // else Firmware 3+ basalt, chalk and later so is UTC already
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time()=%lu", unix_time);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time()=%lu", unix_time);
 	unix_time /= 30;
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time mod 30=%lu", unix_time);
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "UTC unix_time mod 30=%lu", unix_time);
 
 	sha1_time[4] = (unix_time >> 24) & 0xFF;
 	sha1_time[5] = (unix_time >> 16) & 0xFF;
@@ -191,6 +258,16 @@ uint32_t get_token() {
 void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 	int current_seconds = 30 - (tick_time->tm_sec % 30);
 
+    if (settings.time_out_period != 0)
+    {
+        if (time(NULL) - timeout_timer >= settings.time_out_period)
+        {
+            // From https://forums.pebble.com/t/solved-proper-watch-app-exit-method/9976
+            // https://developer.pebble.com/docs/c/User_Interface/Window_Stack/#window_stack_pop_all
+            window_stack_pop_all(true);
+        }
+    }
+
 	vibration_handler(current_seconds);
 
 	if (current_token_changed || current_seconds == 30) {
@@ -215,14 +292,21 @@ void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 static void click_handler(ClickRecognizerRef recognizer, Window *window) {
 	switch ((int)click_recognizer_get_button_id(recognizer)) {
 		case BUTTON_ID_UP:
+            do
+            {
 			current_token = (current_token - 1 + NUM_SECRETS) % NUM_SECRETS;
 			current_token_changed = true;
+            } while (settings.otp_sizes[current_token] == 0);
 			break;
 		case BUTTON_ID_DOWN:
+            do
+            {
 			current_token = (current_token + 1) % NUM_SECRETS;
 			current_token_changed = true;
+            } while (settings.otp_sizes[current_token] == 0);
 			break;
 	}
+    reset_timeout();
 	time_t now = time(NULL);
 	handle_second_tick(gmtime(&now), SECOND_UNIT);
 }
@@ -270,7 +354,7 @@ static void window_unload(Window *window) {
 }
 
 static void app_message_init(void) {
-	//app_message_open(64 /* inbound_size */, 0 /* outbound_size */);
+	//app_message_open(256 /* inbound_size */, 0 /* outbound_size */);
 	app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 	app_message_register_inbox_received(in_received_handler);
 	app_message_register_inbox_dropped(in_dropped_handler);
@@ -292,6 +376,7 @@ static void init(void) {
 	window_set_background_color(window, GColorBlack);
 
 	set_timezone();
+    reset_timeout();
 
 	time_t now = time(NULL);
 	handle_second_tick(gmtime(&now), SECOND_UNIT);

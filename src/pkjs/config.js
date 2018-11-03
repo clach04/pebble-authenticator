@@ -22,6 +22,16 @@ module.exports = [
                 "label": "On new token",
                 "messageKey": "vib_renew",
                 "defaultValue": false
+            },
+            {
+                "type": "slider",
+                "label": "Timeout",
+                "description": "Inactivity timeout in secs (zero = no timeout)",
+                "messageKey": "TIME_OUT_PERIOD",
+                "defaultValue": 120,  // 2 * 60
+                "min": 0,
+                "max": +720,
+                "step": 1
             }
         ]
     },
@@ -48,6 +58,26 @@ module.exports = [
                 "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
                 "messageKey": "S00_SECRET",
                 "defaultValue": "MZXW633PN5XW6",
+                "attributes": {
+                    "limit": 16
+                }
+            },
+            {
+                "type": "input",
+                "label": "Name 02",
+                "description": "Name limited to 16 bytes",
+                "messageKey": "S01_NAME",
+                "defaultValue": "test",
+                "attributes": {
+                    "limit": 16
+                }
+            },
+            {
+                "type": "input",
+                "label": "Secret 02",
+                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "messageKey": "S01_SECRET",
+                "defaultValue": "PSKFB2VHFIEGNI2H",
                 "attributes": {
                     "limit": 16
                 }
