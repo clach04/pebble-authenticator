@@ -2,7 +2,6 @@
 TODO
 
 add more entries
-change UUID
 handle more config settings (move most NUM_SETTINGS usage to use settings count)
 consider moving current current_token into settings, con is that it would rewrites all settings on exit (so maybe not)
 */
@@ -37,6 +36,7 @@ typedef struct persist {
     int time_out_period;
     bool vib_warn;
     bool vib_renew;
+    // if add items here, bump "config_version"
 } __attribute__((__packed__)) persist;
 
 persist settings = {
@@ -49,7 +49,7 @@ persist settings = {
     	{ 0x66, 0x6F, 0x6F, 0x6F, 0x6F, 0x6F, 0x6F, 0x6F },  // secret (in base32) "MZXW633PN5XW6===" == 'fooooooo' , See https://github.com/google/google-authenticator/issues/70
     	{ 0x7C, 0x94, 0x50, 0xEA, 0xA7, 0x2A, 0x08, 0x66, 0xA3, 0x47 },  // secret (in base32) "PSKFB2VHFIEGNI2H"
     },
-    .otp_sizes = {8,10,},
+    .otp_sizes = {8,10,0},  // c99 defaults the rest to zero
     .time_out_period = 2 * 60,  // 2 minutes
     .vib_warn = false,
     .vib_renew = false,
@@ -76,10 +76,12 @@ void get_config() {
             persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);
         }
     }
+    /*
     else
     {
         persist_delete(MESSAGE_KEY_PEBBLE_SETTINGS_VERSION);  // FIXME here for debug, this is unreleased app so no need for this
     }
+    */
 
     if (persist_exists(MESSAGE_KEY_PEBBLE_SETTINGS))
     {
