@@ -19,8 +19,8 @@ Pebble.addEventListener('ready', function(e) {
 
 });
 
-/*
-// as autoHandleEvents set to false need a basic showConfigurationa ction
+///*
+// as autoHandleEvents set to false need a basic showConfiguration action
 Pebble.addEventListener('showConfiguration', function(e) {
     Pebble.openURL(clay.generateUrl());
 });
@@ -36,6 +36,9 @@ Pebble.addEventListener('webviewclosed', function(e) {
     var dict = clay.getSettings(e.response);
     //dict.TIME_OUT_PERIOD = parseInt(dict.TIME_OUT_PERIOD)
 
+    // size of encoded value can help determine inbox size
+    // For 3 entries; length=729
+    console.log('string config data length=' + JSON.stringify(e).length);
     // Send settings values to watch side
     Pebble.sendAppMessage(dict, function(e) {
         console.log('Sent config data to Pebble');
@@ -44,4 +47,5 @@ Pebble.addEventListener('webviewclosed', function(e) {
         //console.log(JSON.stringify(e));
     });
 });
-*/
+//*/
+
