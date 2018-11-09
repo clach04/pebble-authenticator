@@ -21,7 +21,13 @@ More info on how to set that up found [here](https://developer.rebble.io/develop
 
 Uses Clay.
 
-See https://web.archive.org/web/20170429103612/https://m.connectedly.com/how-get-your-two-step-verification-codes-your-pebble for how to get secrets onto phone/pebble.
+See https://web.archive.org/web/20170429103612/https://m.connectedly.com/how-get-your-two-step-verification-codes-your-pebble for how to get secrets onto phone/pebble. Extract/summary:
+
+> So for example in Gmail, you'll need to login and go to https://accounts.google.com/b/0/SmsAuthSettings. Once there, select "Move to a different phone"
+> 	
+> Choose your phone type and click Continue
+> 
+> Now select the "Can't scan the barcode?" link to reveal the Secret -- in this case a string of 32 characters in the yellow box. Enter that code into the config for Pebble app.
 
 ## Install
 
