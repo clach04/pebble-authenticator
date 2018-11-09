@@ -21,7 +21,7 @@ More info on how to set that up found [here](https://developer.rebble.io/develop
 
 Uses Clay.
 
-See https://web.archive.org/web/20170429103612/https://m.connectedly.com/how-get-your-two-step-verification-codes-your-pebble for how to get secrets onto phone/pebble. Extract/summary:
+See http://www.tomsguide.com/faq/id-2430350/find-authentication-code-pebble.html or https://web.archive.org/web/20170429103612/https://m.connectedly.com/how-get-your-two-step-verification-codes-your-pebble for how to get secrets onto phone/pebble. Extract/summary:
 
 > So for example in Gmail, you'll need to login and go to https://accounts.google.com/b/0/SmsAuthSettings. Once there, select "Move to a different phone"
 > 	
