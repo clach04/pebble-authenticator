@@ -29,9 +29,7 @@
 "S02_NAME",
 "S02_SECRET",
 "S03_NAME",
-"S03_SECRET",
-"S04_NAME",
-"S04_SECRET"
+"S03_SECRET"
         ],
         "projectType": "native",
         "resources": {
@@ -56,5 +54,5 @@
             "watchface": false
         }
     },
-    "version": "2.1.0"
+    "version": "2.1.1"
 }
