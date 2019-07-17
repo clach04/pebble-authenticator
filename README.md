@@ -12,7 +12,10 @@ Works on all pebbles (either using native pebble API to determine timezone/gmt-o
 
 ## Requirements
 
-Cloudpebble (currently requires self hosting) and SDK3/4. NOTE untested with local SDK.
+Either of:
+
+* Cloudpebble (currently requires self hosting) and SDK3/4.
+* local SDK, known to work with Pebble Tool v4.5 and SDK 4.3.
 
 Running the `pebble` command assumes you have Pebble SDK installed configured to compile Pebble apps.
 More info on how to set that up found [here](https://developer.rebble.io/developer.pebble.com/index.html).
