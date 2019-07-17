@@ -124,7 +124,8 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S00_SECRET");
         temp_key_base32 = packet_get_string(iter, MESSAGE_KEY_S00_SECRET);
         data_len = base32_decode((uint8_t *) temp_key_base32, temp_key, strlen(temp_key_base32)); // potential for buffer overrun? certainly potential for error
-        settings.otp_sizes[0] = min(data_len, (int) sizeof(settings.otp_keys[0]));
+        data_len = min(data_len, (int) sizeof(settings.otp_keys[0]));
+        settings.otp_sizes[0] = data_len;
         // check data_len for errors before copying?
         APP_LOG(APP_LOG_LEVEL_INFO, "MESSAGE_KEY_S00_SECRET (after b32) len %d", (int) data_len);
         memcpy(settings.otp_keys[0], temp_key, (unsigned int) data_len);
@@ -147,8 +148,8 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "incoming message MESSAGE_KEY_S0" #MACRO_NUM "_SECRET");\
         temp_key_base32 = packet_get_string(iter, MESSAGE_KEY_S0 ## MACRO_NUM ## _SECRET);\
         data_len = base32_decode((uint8_t *) temp_key_base32, temp_key, strlen(temp_key_base32)); /* potential for buffer overrun? certainly potential for error */ \
-        settings.otp_sizes[MACRO_NUM] = min(data_len, (int) sizeof(settings.otp_keys[MACRO_NUM]));\
-        /* check data_len for errors before copying? */ \
+        data_len = min(data_len, (int) sizeof(settings.otp_keys[MACRO_NUM]));\
+        settings.otp_sizes[MACRO_NUM] = data_len;\
         APP_LOG(APP_LOG_LEVEL_INFO, "MESSAGE_KEY_S0" #MACRO_NUM "_SECRET (after b32) len %d", (int) data_len);\
         memcpy(settings.otp_keys[MACRO_NUM], temp_key, (unsigned int) data_len);\
         current_token_changed = true;  /* Force screen refresh (on next second) and persist settings */ \
