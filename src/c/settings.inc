@@ -6,8 +6,8 @@
 int config_version=3; // Increment if persist settings changes structure
 typedef struct persist {
     int num_entries;
-    char otp_labels[NUM_SECRETS][17];  // labels for otp_keys[]
-    unsigned char otp_keys[NUM_SECRETS][10];  // raw bytes for secrets (the integer in a byte array)
+    char otp_labels[NUM_SECRETS][16+1];  // labels for otp_keys[]
+    unsigned char otp_keys[NUM_SECRETS][10];  // raw bytes for secrets (integer in a byte array), max 80-bits
     int otp_sizes[NUM_SECRETS];  // number of bytes for otp_keys[] entries
     int time_out_period;
     bool vib_warn;

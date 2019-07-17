@@ -10,6 +10,11 @@ Config is via Clay and thus local to phone and pebble. This does mean copies of 
 
 Works on all pebbles (either using native pebble API to determine timezone/gmt-offset or JS on phone for older Aplite)
 
+NOTE secret length is limited to 80-bits (10 bytes). This is below both the minimum and recommendation in [RFC 4226](https://tools.ietf.org/html/rfc6238)
+
+> The length of the shared secret MUST be at least 128 bits.
+> This document RECOMMENDs a shared secret length of 160 bits.
+
 ## Requirements
 
 Either of:
