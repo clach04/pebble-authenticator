@@ -57,11 +57,11 @@ module.exports = [
             {
                 "type": "input",
                 "label": "Secret 01",
-                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "description": "Secret limited to 32-bytes (256-bit), base32 52 bytes. NOTE do NOT include padding '\"'='",
                 "messageKey": "S00_SECRET",
                 "defaultValue": "MZXW633PN5XW6",
                 "attributes": {
-                    "limit": 16
+                    "limit": 52
                 }
             },
             {
@@ -77,11 +77,11 @@ module.exports = [
             {
                 "type": "input",
                 "label": "Secret 02",
-                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "description": "Secret limited to 32-bytes (256-bit), base32 52 bytes. NOTE do NOT include padding '\"'='",
                 "messageKey": "S01_SECRET",
                 "defaultValue": "PSKFB2VHFIEGNI2H",
                 "attributes": {
-                    "limit": 16
+                    "limit": 52
                 }
             },
             {
@@ -97,11 +97,11 @@ module.exports = [
             {
                 "type": "input",
                 "label": "Secret 03",
-                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "description": "Secret limited to 32-bytes (256-bit), base32 52 bytes. NOTE do NOT include padding '\"'='",
                 "messageKey": "S02_SECRET",
                 "defaultValue": "",
                 "attributes": {
-                    "limit": 16
+                    "limit": 52
                 }
             },
             {
@@ -117,11 +117,11 @@ module.exports = [
             {
                 "type": "input",
                 "label": "Secret 04",
-                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "description": "Secret limited to 32-bytes (256-bit), base32 52 bytes. NOTE do NOT include padding '\"'='",
                 "messageKey": "S03_SECRET",
                 "defaultValue": "",
                 "attributes": {
-                    "limit": 16
+                    "limit": 52
                 }
             },
             {
@@ -137,14 +137,13 @@ module.exports = [
             {
                 "type": "input",
                 "label": "Secret 05",
-                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\"'='",
+                "description": "Secret limited to 32-bytes (256-bit), base32 52 bytes. NOTE do NOT include padding '\"'='",
                 "messageKey": "S04_SECRET",
                 "defaultValue": "",
                 "attributes": {
-                    "limit": 16
+                    "limit": 52
                 }
             }
-
 
 
         ]

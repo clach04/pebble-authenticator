@@ -30,11 +30,11 @@ template = ''',
             {
                 "type": "input",
                 "label": "Secret 0{num}",
-                "description": "Secret limited to 16 bytes. NOTE do NOT include padding '\\"'='",
+                "description": "Secret limited to 32-bytes (256-bit), base32 52 bytes. NOTE do NOT include padding '\\"'='",
                 "messageKey": "S0{index_num}_SECRET",
                 "defaultValue": "",
                 "attributes": {
-                    "limit": 16
+                    "limit": 52
                 }
             }'''
 
