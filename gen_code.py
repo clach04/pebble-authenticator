@@ -7,7 +7,7 @@ import sys
 try:
     number_of_slots = int(sys.argv[1])
 except:  # yep anything goes
-    number_of_slots = 5
+    number_of_slots = 4  # NOTE 5 is too large with 32-byte secret support, larger than Pebble write persist which is capped at 256
 
 
 # f-strings does not appear to support escaping {}

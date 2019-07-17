@@ -123,26 +123,6 @@ module.exports = [
                 "attributes": {
                     "limit": 52
                 }
-            },
-            {
-                "type": "input",
-                "label": "Name 05",
-                "description": "Name limited to 16 bytes",
-                "messageKey": "S04_NAME",
-                "defaultValue": "",
-                "attributes": {
-                    "limit": 16
-                }
-            },
-            {
-                "type": "input",
-                "label": "Secret 05",
-                "description": "Secret limited to 32-bytes (256-bit), base32 52 bytes. NOTE do NOT include padding '\"'='",
-                "messageKey": "S04_SECRET",
-                "defaultValue": "",
-                "attributes": {
-                    "limit": 52
-                }
             }
 
 

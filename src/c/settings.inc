@@ -1,10 +1,10 @@
 
 // potentially machine generated
 
-#define NUM_SECRETS 5
+#define NUM_SECRETS 4  // 5 is too large when SECRET_LEN=32 (settings is then 275 bytes, max write size if 256)
 #define SECRET_LEN 32 // length in bytes, 256-bits  == 32 bytes
 
-int config_version=3; // Increment if persist settings changes structure
+int config_version=4; // Increment if persist settings changes structure
 typedef struct persist {
     int num_entries;
     char otp_labels[NUM_SECRETS][16+1];  // labels for otp_keys[]
@@ -42,7 +42,5 @@ persist settings = {
     DO_SETTINGS_NAME(2)\
     DO_SETTINGS_SECRET(2)\
     DO_SETTINGS_NAME(3)\
-    DO_SETTINGS_SECRET(3)\
-    DO_SETTINGS_NAME(4)\
-    DO_SETTINGS_SECRET(4)
+    DO_SETTINGS_SECRET(3)
 // FIXME consider making this a C function?
