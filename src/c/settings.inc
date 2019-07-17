@@ -2,12 +2,13 @@
 // potentially machine generated
 
 #define NUM_SECRETS 5
+#define SECRET_LEN 32 // length in bytes, 256-bits  == 32 bytes
 
 int config_version=3; // Increment if persist settings changes structure
 typedef struct persist {
     int num_entries;
     char otp_labels[NUM_SECRETS][16+1];  // labels for otp_keys[]
-    unsigned char otp_keys[NUM_SECRETS][32];  // raw bytes for secrets (integer in a byte array), max 256-bits - RFC 4226 recommends 160-bits, but there are some 256-bit ones in use (by Amazon)
+    unsigned char otp_keys[NUM_SECRETS][SECRET_LEN];  // raw bytes for secrets (integer in a byte array), RFC 4226 recommends 160-bits, but there are some 256-bit ones in use (by Amazon)
     int otp_sizes[NUM_SECRETS];  // number of bytes for otp_keys[] entries
     int time_out_period;
     bool vib_warn;

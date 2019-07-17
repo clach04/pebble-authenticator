@@ -79,7 +79,7 @@ void get_config() {
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
     int data_len=-1;
-    unsigned char temp_key[10];
+    unsigned char temp_key[SECRET_LEN];
     char * temp_key_base32=NULL;
 #ifdef PBL_PLATFORM_APLITE
 	Tuple *timezone_tuple = dict_find(iter, MESSAGE_KEY_timezone);
